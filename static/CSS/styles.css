@@ -1,0 +1,68 @@
+body {
+    text-align: center;
+}
+
+h1 {
+    padding-bottom: 3%;
+}
+
+
+.header {
+    background-color: antiquewhite;
+}
+
+.title {
+    text-align: center;
+    padding: 20px;
+}
+
+.login {
+    padding-left: 75%;
+    font-size: small;
+    
+}
+
+.login-link {
+    margin: 7px;
+}
+
+.navbar {
+    padding: 0;
+}
+
+.navbar-nav {
+    text-align: left;
+}
+
+.navbar-toggler {
+    background-color: aliceblue;
+}
+
+.section {
+    padding: 10% 20%;
+}
+
+#devotional-img {
+    padding-bottom: 5%;
+}
+
+#terry-img {
+    border-radius: 50%;
+    padding-bottom: 3%;
+}
+
+.content {
+    text-align: left;
+}
+
+.contact-title {
+    padding-top: 50px;
+}
+
+.page-footer {
+    padding-top: 190px;
+}
+
+#name {
+    color: black;
+}
