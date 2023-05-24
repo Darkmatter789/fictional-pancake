@@ -15,9 +15,14 @@
         <div class="header">
             <div class="login">
                 <span>
-                    <a class="login-link" href="login">Login</a>
-                    <a class="login-link" href="register">Register</a>
-                    <a class="login-link" href="">Logout</a>
+                    {% if not current_user.is_authenticated: %}
+                    <a class="login-link" style="text-decoration: none;" href="login">Login</a>
+                    <a class="login-link" style="text-decoration: none;" href="register">Register</a>
+                    {% endif %}
+                    {% if current_user.is_authenticated: %}
+                    <p>Hello, {{ current_user.name }}</p>
+                    <a class="login-link" style="text-decoration: none;" href="logout">Logout</a>
+                    {% endif %}
                 </span>
             </div>
             <div class="title container-fluid col-lg-6">
@@ -35,17 +40,24 @@
                             <a class="nav-link active" aria-current="page" href="/">Home</a>
                             </li>
                             <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="blog">Blog</a>
+                            <a class="nav-link active" aria-current="page" href="{{url_for('all_blog_posts')}}">Blog</a>
                             </li>
+                            {% if current_user.is_authenticated: %}
                             <li class="nav-item">
                             <a class="nav-link active" aria-current="page" href="messages">Message Board</a>
                             </li>
+                            {% endif %}
                             <li class="nav-item">
                             <a class="nav-link active" aria-current="page" href="about">About Us</a>
                             </li>
                             <li class="nav-item">
                             <a class="nav-link active" aria-current="page" href="contact">Contact Us</a>
                             </li>
+                            {% if current_user.name == "Admin" %}
+                            <li class="nav-item">
+                                <a class="nav-link active" aria-current="page" href="create-blog-post">New Blog Post</a>
+                            </li>
+                            {% endif %}
                         </ul>
                     </div>
                 </div>

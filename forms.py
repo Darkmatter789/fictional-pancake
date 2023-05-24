@@ -3,12 +3,19 @@ from wtforms import StringField, SubmitField, PasswordField
 from wtforms.validators import DataRequired, URL, ValidationError
 from flask_ckeditor import CKEditorField
 
+
 class CreatePostForm(FlaskForm):
-    title = StringField("Blog Post Title", validators=[DataRequired()])
-    subtitle = StringField("Subtitle", validators=[DataRequired()])
-    img_url = StringField("Blog Image URL", validators=[URL()])
-    body = CKEditorField("Blog Content", validators=[DataRequired()])
+    title = StringField("Post Title", validators=[DataRequired()])
+    body = CKEditorField("Post Content", validators=[DataRequired()])
     submit = SubmitField("Submit Post")
+
+
+class CreateBlogPost(FlaskForm):
+    blog_title = StringField("Title", validators=[DataRequired()])
+    img_url = StringField("Image URL", validators=[URL()])
+    blog_text = CKEditorField("Content", validators=[DataRequired()], render_kw={"style": "height: 250px"})
+    submit = SubmitField("Submit Post")
+
 
 class RegisterForm(FlaskForm):
     name = StringField("Name", validators=[DataRequired()])
@@ -16,14 +23,17 @@ class RegisterForm(FlaskForm):
     password = PasswordField("Password", validators=[DataRequired()])
     submit = SubmitField("Join")
 
+
 class LoginForm(FlaskForm):
     email = StringField("Email", validators=[DataRequired()])
     password = PasswordField("Password", validators=[DataRequired()])
-    submit = SubmitField("Let me in")
+    submit = SubmitField("Sign in")
+
 
 class CommentForm(FlaskForm):
     body = CKEditorField("Comment", validators=[DataRequired()])
     submit = SubmitField("Submit Comment")
+
 
 class EmailForm(FlaskForm):
 
@@ -31,6 +41,7 @@ class EmailForm(FlaskForm):
         if "@" not in email.data or "." not in email.data:
             raise ValidationError("That is not a valid email address")
         
+
     name = StringField("Name", validators=[DataRequired()])
     email = StringField("Email", validators=[DataRequired()])
     message = CKEditorField("Message", validators=[DataRequired()], render_kw={"style": "height: 250px"})

@@ -17,13 +17,14 @@ h1 {
 }
 
 .login {
-    padding-left: 75%;
+    padding-left: 85%;
     font-size: small;
     
 }
 
 .login-link {
     margin: 7px;
+    color: black;
 }
 
 .navbar {
@@ -65,4 +66,29 @@ h1 {
 
 #name {
     color: black;
+}
+
+.new-post-title {
+    padding-top: 50px;
+}
+
+.blog-post {
+    text-align: left;
+}
+
+.edit-btn {
+    text-align: left;
+    padding-bottom: 5%;
+}
+
+.blog-comment {
+    text-align: left;
+}
+
+.post-heading {
+    padding-top: 5%;
+}
+
+.post-preview {
+    padding-top: 5%;
 }
