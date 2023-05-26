@@ -7,7 +7,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
 from functools import wraps
-from forms import EmailForm, RegisterForm, LoginForm, CreateBlogPost, CommentForm
+from forms import EmailForm, RegisterForm, LoginForm, CreateBlogPost, CommentForm, CreatePostForm
 from contact import Contact
 
 
@@ -30,8 +30,9 @@ class User(UserMixin, db.Model):
     name = db.Column(db.String(1000))
     blog_posts = relationship("BlogPost", back_populates="author")
     blog_comments = relationship("BlogComment", back_populates="blog_comment_author")
-    # message_posts = relationship("Message", back_populates="author")
-    # message_comments = relationship("MessageComment", back_populates="message_comment_author")
+    message_posts = relationship("Message", back_populates="author")
+    message_comments = relationship("MessageComment", back_populates="message_comment_author")
+
 
 class BlogPost(db.Model):
     __tablename__ = "blog_posts"
@@ -59,21 +60,21 @@ class Message(db.Model):
     __tablename__ = "messages"
     id = db.Column(db.Integer, primary_key=True)
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    # author = relationship("User", back_populates="message_posts")
+    author = relationship("User", back_populates="message_posts")
     title = db.Column(db.String(250), unique=True, nullable=False)
     date = db.Column(db.String(250), nullable=False)
     body = db.Column(db.Text, nullable=False)
     img_url = db.Column(db.String(250), nullable=False)
-    # message_comments = relationship("MessageComment", back_populates="message_parent_post")
+    message_comments = relationship("MessageComment", back_populates="message_parent_post")
 
 
 class MessageComment(db.Model):
     __tablename__ = "message_comments"
     id = db.Column(db.Integer, primary_key=True)
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    # message_comment_author = relationship("User", back_populates="message_comments")
-    message_post_id = db.Column(db.Integer, db.ForeignKey('blog_posts.id'))
-    # message_parent_post = relationship("Message", back_populates="message_comments")
+    message_comment_author = relationship("User", back_populates="message_comments")
+    message_post_id = db.Column(db.Integer, db.ForeignKey('messages.id'))
+    message_parent_post = relationship("Message", back_populates="message_comments")
     message_text = db.Column(db.Text, nullable=False)
 
 
@@ -98,6 +99,7 @@ def load_user(user_id):
 @app.route("/")
 def home():
     return render_template("index.html")
+
 
 # Authentication functions
 @app.route("/login", methods=["GET", "POST"])
@@ -144,10 +146,12 @@ def register():
             return redirect(url_for("home"))
     return render_template("register.html", form=reg_form)
 
+
 # About
 @app.route("/about")
 def about_us():
     return render_template("about.html")
+
 
 # Contact
 @app.route("/contact")
@@ -163,14 +167,80 @@ def contact():
         return redirect(url_for("contact"))
     return render_template("contact.html", form=contact_form)
 
+
 # Message Fuctions
-@app.route("/messages")
+@app.route("/all-messages")
 @login_required
-def messages():
-    return render_template("messages.html")
+def all_messages():
+    message_posts = Message.query.all()
+    return render_template("messages.html", posts=message_posts)
+
+@app.route("/get-message-post/<int:post_id>", methods=["GET", "POST"])
+@login_required
+def get_message_post(post_id):
+    comment_form = CommentForm()
+    requested_post = Message.query.get(post_id)
+    message_comments = MessageComment.query.all()
+    if comment_form.validate_on_submit():
+        if not current_user.is_authenticated:
+            flash("Please login to submit a comment.")
+            return redirect(url_for("login"))
+        new_comment = MessageComment(
+            author_id=current_user.id,
+            message_post_id=post_id,
+            message_text=comment_form.body.data)
+        db.session.add(new_comment)
+        db.session.commit()
+        return redirect(url_for("get_message_post", post_id=post_id))    
+    return render_template("message-post.html", post=requested_post, form=comment_form, comments=message_comments)
+
+@app.route("/create-message-post", methods=["GET", "POST"])
+@login_required
+def create_message_post():
+    form = CreatePostForm()
+    if form.validate_on_submit():
+        new_post = Message(
+            title=form.title.data,
+            body=form.body.data,
+            img_url=form.img_url.data,
+            author=current_user,
+            date=date.today().strftime("%B %d, %Y")
+        )
+        db.session.add(new_post)
+        db.session.commit()
+        return redirect(url_for("all_messages"))
+    return render_template("make-message-post.html", form=form)
+
+@app.route("/edit-message-post/<int:post_id>")
+@login_required
+def edit_message_post(post_id):
+    post = Message.query.get(post_id)
+    edit_form = CreatePostForm(
+        title=post.title,
+        img_url=post.img_url,
+        author=post.author,
+        text=post.body
+    )
+    if edit_form.validate_on_submit():
+        post.title = edit_form.title.data
+        post.img_url = edit_form.img_url.data
+        post.author = edit_form.author.data
+        post.body = edit_form.text.data
+        db.session.commit()
+        return redirect(url_for("get_message_post", post_id=post.id))
+    return render_template("make-message-post.html", form=edit_form)
+
+
+@app.route("/delete-message-post/<int:post_id>")
+@login_required
+def delete_message_post(post_id):
+    post_to_delete = Message.query.get(post_id)
+    db.session.delete(post_to_delete)
+    db.session.commit()
+    return redirect(url_for('all_message_posts'))
+
 
 # Blog Functions
-
 @app.route("/all-blog-posts", methods=["GET", "POST"])
 def all_blog_posts():
     blog_posts = BlogPost.query.all()
