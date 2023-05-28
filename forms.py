@@ -19,7 +19,7 @@ class CreateBlogPost(FlaskForm):
 
 
 class RegisterForm(FlaskForm):
-    name = StringField("Name", validators=[DataRequired()])
+    name = StringField("First and Last Name", validators=[DataRequired()])
     email = StringField("Email", validators=[DataRequired()])
     password = PasswordField("Password", validators=[DataRequired()])
     submit = SubmitField("Join")

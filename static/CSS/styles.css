@@ -3,7 +3,7 @@ body {
 }
 
 h1 {
-    padding-bottom: 3%;
+    padding-bottom: 1%;
 }
 
 
@@ -27,6 +27,11 @@ h1 {
     color: black;
 }
 
+.login-message {
+    text-align: center;
+    color: red;
+}
+
 .navbar {
     padding: 0;
 }
@@ -40,7 +45,12 @@ h1 {
 }
 
 .section {
-    padding: 10% 20%;
+    padding: 5% 20%;
+}
+
+.anouncements{
+    padding: 0% 20%;
+    text-align: left;
 }
 
 #devotional-img {
@@ -83,6 +93,7 @@ h1 {
 
 .blog-comment {
     text-align: left;
+    font-weight: bold;
 }
 
 .post-heading {
@@ -91,4 +102,12 @@ h1 {
 
 .post-preview {
     padding-top: 5%;
+}
+
+.commentText {
+    text-align: left;
+}
+
+.edit {
+    text-align: right;
 }

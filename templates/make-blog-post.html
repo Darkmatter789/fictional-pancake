@@ -2,26 +2,26 @@
 {% import "bootstrap/wtf.html" as wtf %}
 
 <div class="new-post-title container">
-    <div class="row">
-      <div class="col-lg-8 col-md-10 mx-auto">
-        <div class="page-heading">
-          {% if form.blog_title: %}
-          <h1>Edit Post</h1>
-          {% else: %}
-          <h1>New Post</h1>
-          {% endif %}
-        </div>
+  <div class="row">
+    <div class="col-lg-8 col-md-10 mx-auto">
+      <div class="page-heading">
+        {% if form.blog_title.data: %}
+        <h1>Edit Blog Post</h1>
+        {% else: %}
+        <h1>New Blog Post</h1>
+        {% endif %}
       </div>
     </div>
   </div>
-  <div class="blog-post container">
-    <div class="row">
-      <div class="col-lg-7 col-md-7 col-sm-6 col-xs-6 mx-auto content">
-        {{ ckeditor.load() }}
-        {{ ckeditor.config(name='body') }}
-        {{ wtf.quick_form(form, novalidate=True, button_map={"submit": "primary"}) }}
-      </div>
+</div>
+<div class="blog-post container">
+  <div class="row">
+    <div class="col-lg-7 col-md-7 col-sm-6 col-xs-6 mx-auto content">
+      {{ ckeditor.load() }}
+      {{ ckeditor.config(name='body') }}
+      {{ wtf.quick_form(form, novalidate=True, button_map={"submit": "primary"}) }}
     </div>
   </div>
+</div>
 
 {% include "footer.html" %} 

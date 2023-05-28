@@ -21,7 +21,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///RCA-Users.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-
+# User database classes
 class User(UserMixin, db.Model):
     __tablename__ = "user"
     id = db.Column(db.Integer, primary_key=True)
@@ -54,6 +54,7 @@ class BlogComment(db.Model):
     blog_post_id = db.Column(db.Integer, db.ForeignKey('blog_posts.id'))
     blog_parent_post = relationship("BlogPost", back_populates="blog_comments")
     blog_text = db.Column(db.Text, nullable=False)
+    date = db.Column(db.String(250), nullable=False)
 
 
 class Message(db.Model):
@@ -76,12 +77,15 @@ class MessageComment(db.Model):
     message_post_id = db.Column(db.Integer, db.ForeignKey('messages.id'))
     message_parent_post = relationship("Message", back_populates="message_comments")
     message_text = db.Column(db.Text, nullable=False)
+    date = db.Column(db.String(250), nullable=False)
 
 
+# Opens and creates database tables
 with app.app_context():
     db.create_all()
 
 
+# Decorator function that checks if current_user is Admin
 def admin_only(f):
     @wraps(f)
     def decorator(*args, **kwargs):
@@ -91,11 +95,13 @@ def admin_only(f):
     return decorator
 
 
+# Searches database for authenticated user. Returns 404 status if user not in database.
 @login_manager.user_loader
 def load_user(user_id):
     return db.get_or_404(User, user_id)
 
 
+# Home page
 @app.route("/")
 def home():
     return render_template("index.html")
@@ -147,13 +153,13 @@ def register():
     return render_template("register.html", form=reg_form)
 
 
-# About
+# About page
 @app.route("/about")
 def about_us():
     return render_template("about.html")
 
 
-# Contact
+# Contact page
 @app.route("/contact")
 def contact():
     contact_form = EmailForm()
@@ -175,6 +181,7 @@ def all_messages():
     message_posts = Message.query.all()
     return render_template("messages.html", posts=message_posts)
 
+
 @app.route("/get-message-post/<int:post_id>", methods=["GET", "POST"])
 @login_required
 def get_message_post(post_id):
@@ -188,11 +195,14 @@ def get_message_post(post_id):
         new_comment = MessageComment(
             author_id=current_user.id,
             message_post_id=post_id,
-            message_text=comment_form.body.data)
+            message_text=comment_form.body.data,
+            date=date.today().strftime("%B %d, %Y")
+            )
         db.session.add(new_comment)
         db.session.commit()
         return redirect(url_for("get_message_post", post_id=post_id))    
     return render_template("message-post.html", post=requested_post, form=comment_form, comments=message_comments)
+
 
 @app.route("/create-message-post", methods=["GET", "POST"])
 @login_required
@@ -211,6 +221,7 @@ def create_message_post():
         return redirect(url_for("all_messages"))
     return render_template("make-message-post.html", form=form)
 
+
 @app.route("/edit-message-post/<int:post_id>")
 @login_required
 def edit_message_post(post_id):
@@ -219,7 +230,7 @@ def edit_message_post(post_id):
         title=post.title,
         img_url=post.img_url,
         author=post.author,
-        text=post.body
+        body=post.body
     )
     if edit_form.validate_on_submit():
         post.title = edit_form.title.data
@@ -237,7 +248,16 @@ def delete_message_post(post_id):
     post_to_delete = Message.query.get(post_id)
     db.session.delete(post_to_delete)
     db.session.commit()
-    return redirect(url_for('all_message_posts'))
+    return redirect(url_for('all_messages'))
+
+
+@app.route("/delete-message-comment/<int:comment_id>")
+@login_required
+def delete_message_comment(comment_id):
+    comment_to_delete = MessageComment.query.get(comment_id)
+    db.session.delete(comment_to_delete)
+    db.session.commit()
+    return redirect(url_for('get_message_post', post_id=comment_to_delete.message_post_id))
 
 
 # Blog Functions
@@ -259,7 +279,9 @@ def get_blog_post(post_id):
         new_comment = BlogComment(
             author_id=current_user.id,
             blog_post_id=post_id,
-            blog_text=comment_form.body.data)
+            blog_text=comment_form.body.data,
+            date=date.today().strftime("%B %d, %Y")
+            )
         db.session.add(new_comment)
         db.session.commit()
         return redirect(url_for("get_blog_post", post_id=post_id))    
@@ -314,6 +336,15 @@ def delete_blog_post(post_id):
     db.session.delete(post_to_delete)
     db.session.commit()
     return redirect(url_for('all_blog_posts'))
+
+
+@app.route("/delete-blog-comment/<int:comment_id>")
+@login_required
+def delete_blog_comment(comment_id):
+    comment_to_delete = BlogComment.query.get(comment_id)
+    db.session.delete(comment_to_delete)
+    db.session.commit()
+    return redirect(url_for('get_blog_post', post_id=comment_to_delete.blog_post_id))
     
 
 if __name__ == "__main__":
