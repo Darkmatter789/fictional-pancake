@@ -7,7 +7,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
 from functools import wraps
-from forms import EmailForm, RegisterForm, LoginForm, CreateBlogPost, CommentForm, CreatePostForm
+from forms import EmailForm, RegisterForm, LoginForm, CreateBlogPost, CommentForm, CreatePostForm, DevotionalForm, NewsForm, WordForm
 from contact import Contact
 
 
@@ -80,6 +80,29 @@ class MessageComment(db.Model):
     date = db.Column(db.String(250), nullable=False)
 
 
+class DevotionalPost(db.Model):
+    __tablename__ = "daily_devotional"
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(250), unique=True, nullable=False)
+    img_url = db.Column(db.String(250), nullable=False)
+    text = db.Column(db.Text, nullable=False)
+    date = db.Column(db.String(250), nullable=False)
+
+
+class NewsPost(db.Model):
+    __tablename__ = "news"
+    id = db.Column(db.Integer, primary_key=True)
+    news_text = db.Column(db.Text, nullable=False)
+    date = db.Column(db.String(250), nullable=False)
+
+
+class WordPost(db.Model):
+    __tablename__ = "word"
+    id = db.Column(db.Integer, primary_key=True)
+    body = db.Column(db.Text, nullable=False)
+    date = db.Column(db.String(250), nullable=False)
+
+
 # Opens and creates database tables
 with app.app_context():
     db.create_all()
@@ -101,10 +124,50 @@ def load_user(user_id):
     return db.get_or_404(User, user_id)
 
 
-# Home page
-@app.route("/")
+# Homepage
+@app.route("/", methods=["GET", "POST"])
 def home():
-    return render_template("index.html")
+    devotional = DevotionalPost.query.get(1)
+    news = NewsPost.query.all()
+    word = WordPost.query.get(1)
+    return render_template("index.html", devotional_post=devotional, news=news, word=word)
+
+
+# Dashboard for editing homepage ("index.html")
+@app.route("/dashboard", methods=["GET", "POST"])
+@login_required
+@admin_only
+def dashboard():
+    devotional_form = DevotionalForm()
+    news_form = NewsForm()
+    word_form = WordForm()
+    if devotional_form.validate_on_submit():
+        devotional_post = DevotionalPost(
+            title=devotional_form.title.data,
+            img_url=devotional_form.img_url.data,
+            text=devotional_form.text.data,
+            date=devotional_form.launch_date.data
+        )
+        db.session.add(devotional_post)
+        db.session.commit()
+        return redirect(url_for("dashboard"))
+    if news_form.validate_on_submit():
+        news_post = NewsPost(
+            news_text=news_form.body.data,
+            date=date.today().strftime("%B %d, %Y")
+        )
+        db.session.add(news_post)
+        db.session.commit()
+        return redirect(url_for("dashboard"))
+    if word_form.validate_on_submit():
+        word_post = WordPost(
+            body=word_form.word_body.data,
+            date=date.today().strftime("%B %d, %Y")
+        )
+        db.session.add(word_post)
+        db.session.commit()
+        return redirect(url_for("dashboard"))
+    return render_template("dashboard.html", dev_form=devotional_form, news_form=news_form, word_form=word_form)
 
 
 # Authentication functions

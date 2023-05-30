@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, PasswordField
+from wtforms import StringField, SubmitField, PasswordField, DateField
 from wtforms.validators import DataRequired, URL, ValidationError
 from flask_ckeditor import CKEditorField
 
@@ -34,6 +34,24 @@ class LoginForm(FlaskForm):
 class CommentForm(FlaskForm):
     body = CKEditorField("Comment", validators=[DataRequired()])
     submit = SubmitField("Submit Comment")
+
+
+class DevotionalForm(FlaskForm):
+    title = StringField("Post Title", validators=[DataRequired()])
+    img_url = StringField("Image URL", validators=[URL()])
+    text = CKEditorField("Post Content", validators=[DataRequired()])
+    launch_date = DateField("Launch Date", validators=[])
+    submit = SubmitField("Submit")
+
+
+class NewsForm(FlaskForm):
+    body = CKEditorField("News Post", validators=[DataRequired()])
+    submit = SubmitField("Submit")
+
+
+class WordForm(FlaskForm):
+    word_body = CKEditorField("Post Content", validators=[DataRequired()])
+    submit = SubmitField("Submit")
 
 
 class EmailForm(FlaskForm):

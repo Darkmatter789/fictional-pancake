@@ -1,0 +1,46 @@
+{% include "header.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+<div class="new-post-title container">
+    <div class="row">
+        <div class="col-lg-8 col-md-10 mx-auto">
+            <div class="page-heading">
+                <h1>Dashboard</h1>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="dashboard container">
+    <div class="row">
+        <div class="col-lg-7 col-md-7 col-sm-6 col-xs-6 mx-auto content">
+            <h3>Daily Devotional</h3>
+            {{ ckeditor.load() }}
+            {{ ckeditor.config(name='body') }}
+            {{ wtf.quick_form(dev_form, novalidate=True, button_map={"submit": "primary"}) }}
+        </div>
+    </div>
+</div>
+<hr>
+<div class="dashboard container">
+    <div class="row">
+        <div class="col-lg-7 col-md-7 col-sm-6 col-xs-6 mx-auto content">
+            <h3>School News</h3>
+            {{ ckeditor.load() }}
+            {{ ckeditor.config(name='body') }}
+            {{ wtf.quick_form(news_form, novalidate=True, button_map={"submit": "primary"}) }}
+        </div>
+    </div>
+</div>
+<hr>
+<div class="dashboard container">
+    <div class="row">
+        <div class="col-lg-7 col-md-7 col-sm-6 col-xs-6 mx-auto content">
+            <h3>Word From Terry</h3>
+            {{ ckeditor.load() }}
+            {{ ckeditor.config(name='word_body') }}
+            {{ wtf.quick_form(word_form, novalidate=True, button_map={"submit": "primary"}) }}
+        </div>
+    </div>
+</div>
+
+{% include "footer.html" %}
