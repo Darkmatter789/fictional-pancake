@@ -40,7 +40,7 @@ class DevotionalForm(FlaskForm):
     title = StringField("Post Title", validators=[DataRequired()])
     img_url = StringField("Image URL", validators=[URL()])
     text = CKEditorField("Post Content", validators=[DataRequired()])
-    launch_date = DateField("Launch Date", validators=[])
+    launch_date = DateField("Launch Date", validators=[DataRequired()])
     submit = SubmitField("Submit")
 
 

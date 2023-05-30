@@ -127,10 +127,12 @@ def load_user(user_id):
 # Homepage
 @app.route("/", methods=["GET", "POST"])
 def home():
-    devotional = DevotionalPost.query.get(1)
+    todays_date = str(date.today())
+    print(todays_date)
+    devotional = DevotionalPost.query.all()
     news = NewsPost.query.all()
     word = WordPost.query.get(1)
-    return render_template("index.html", devotional_post=devotional, news=news, word=word)
+    return render_template("index.html", devotional_posts=devotional, news=news, word=word, todays_date=todays_date)
 
 
 # Dashboard for editing homepage ("index.html")
@@ -138,6 +140,7 @@ def home():
 @login_required
 @admin_only
 def dashboard():
+    devotionals = DevotionalPost.query.all()
     devotional_form = DevotionalForm()
     news_form = NewsForm()
     word_form = WordForm()
@@ -167,8 +170,104 @@ def dashboard():
         db.session.add(word_post)
         db.session.commit()
         return redirect(url_for("dashboard"))
-    return render_template("dashboard.html", dev_form=devotional_form, news_form=news_form, word_form=word_form)
+    return render_template("dashboard.html", dev_form=devotional_form, news_form=news_form, word_form=word_form, all_devs=devotionals)
 
+
+@app.route("/all-devotionals", methods=["GET", "POST"])
+@login_required
+@admin_only
+def all_devotionals():
+    all_posts = DevotionalPost.query.all()
+    return render_template("devotionals.html", posts=all_posts)
+
+
+@app.route("/edit-devotional/<int:devo_id>")
+@login_required
+@admin_only
+def edit_devotional(devo_id):
+    devotionals = DevotionalPost.query.all()
+    news_form = NewsForm()
+    word_form = WordForm()
+    devo_to_edit = DevotionalPost.query.get(devo_id)
+    edit_form = DevotionalForm(
+        title=devo_to_edit.title,
+        img_url=devo_to_edit.img_url,
+        text=devo_to_edit.text,
+    )
+    if edit_form.validate_on_submit():
+        devo_to_edit.title=edit_form.title.data,
+        devo_to_edit.img_url=edit_form.img_url.data,
+        devo_to_edit.text=edit_form.text.data,
+        devo_to_edit.date=edit_form.launch_date.data
+        db.session.commit()
+        return redirect(url_for("all_devotionals"))
+    return render_template("dashboard.html", dev_form=edit_form, news_form=news_form, word_form=word_form, all_devs=devotionals)
+
+
+@app.route("/delete-devotional/<int:devo_id>")
+@login_required
+@admin_only
+def delete_devotional(devo_id):
+    devo_to_delete = DevotionalPost.query.get(devo_id)
+    db.session.delete(devo_to_delete)
+    db.session.commit()
+    return redirect(url_for("all_devotionals"))
+
+
+@app.route("/edit-news-post/<int:news_id>")
+@login_required
+@admin_only
+def edit_news_post(news_id):
+    devotionals = DevotionalPost.query.all()
+    devotional_form = DevotionalForm()
+    word_form = WordForm()
+    news_to_edit = NewsPost.query.get(news_id)
+    edit_form = NewsForm(
+        body=news_to_edit.news_text
+    )
+    if edit_form.validate_on_submit():
+        news_to_edit.news_text=edit_form.body.data
+        db.session.commit()
+        return redirect(url_for("home"))
+    return render_template("dashboard.html", dev_form=devotional_form, news_form=edit_form, word_form=word_form, all_devs=devotionals)
+
+
+@app.route("/delete-news-post/<int:news_id>")
+@login_required
+@admin_only
+def delete_news_post(news_id):
+    post_to_delete = NewsPost.query.get(news_id)
+    db.session.delete(post_to_delete)
+    db.session.commit()
+    return redirect(url_for('home'))
+
+
+@app.route("/edit-word-post/<int:word_id>")
+@login_required
+@admin_only
+def edit_word_post(word_id):
+    devotionals = DevotionalPost.query.all()
+    devotional_form = DevotionalForm()
+    news_form = NewsForm()
+    word_to_edit = WordPost.query.get(word_id)
+    edit_form = WordForm(
+        word_body=word_to_edit.body
+    )
+    if edit_form.validate_on_submit():
+        word_to_edit.body=edit_form.word_body.data
+        db.session.commit()
+        return redirect(url_for("home"))
+    return render_template("dashboard.html", dev_form=devotional_form, news_form=news_form, word_form=edit_form, all_devs=devotionals)
+
+
+@app.route("/delete-word-post/<int:word_id>")
+@login_required
+@admin_only
+def delete_word_post(word_id):
+    post_to_delete = WordPost.query.get(word_id)
+    db.session.delete(post_to_delete)
+    db.session.commit()
+    return redirect(url_for('home'))
 
 # Authentication functions
 @app.route("/login", methods=["GET", "POST"])
@@ -227,10 +326,11 @@ def about_us():
 def contact():
     contact_form = EmailForm()
     if contact_form.validate_on_submit():
-        new_message = Contact(contact_form.name.data, 
-                              contact_form.email.data,  
-                              contact_form.body.data
-                              )
+        new_message = Contact(
+            contact_form.name.data, 
+            contact_form.email.data,  
+            contact_form.body.data
+            )
         Contact.send_message(new_message)
         flash("Message Sent")
         return redirect(url_for("contact"))
