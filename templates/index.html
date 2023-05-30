@@ -19,9 +19,10 @@
         <h1>School News</h1>
         <ul class="anouncements">
             {% for post in news %}
+            <li>{{ post.news_text| safe }}</li>
                 {% if current_user.is_authenticated: %}
                     {% if current_user.id == 1 %}
-                     <li>{{ post.news_text| safe }}<a style="text-decoration: none;" href="{{url_for('edit_news_post', news_id=post.id) }}">✎</a><a style="color: red; text-decoration: none;" href="{{url_for('delete_news_post', news_id=post.id) }}">✘</a></li>
+                    <a style="text-decoration: none;" href="{{url_for('edit_news_post', news_id=post.id) }}">✎</a><a style="color: red; text-decoration: none;" href="{{url_for('delete_news_post', news_id=post.id) }}">✘</a>
                     {% endif %}
                  {% endif %}
             {% endfor %}
@@ -34,13 +35,13 @@
     <div class="section">
         <h1>A word from Terry</h1>
         <img id="terry-img" src="../static/images/terry.jpg" class="img-fluid" alt="terry-img">
+        <p>{{ word.body| safe }}</p>
         {% if current_user.is_authenticated: %}
             {% if current_user.id == 1 %}
-                <p>{{ word.body| safe }}<a style="text-decoration: none;" href="{{url_for('edit_word_post', word_id=word.id) }}">✎</a><a style="color: red; text-decoration: none;" href="{{url_for('delete_word_post', word_id=word.id) }}">✘</a></p>
+                <a style="text-decoration: none;" href="{{url_for('edit_word_post', word_id=word.id) }}">✎</a><a style="color: red; text-decoration: none;" href="{{url_for('delete_word_post', word_id=word.id) }}">✘</a>
             {% endif %}
         {% endif %}
     </div>
 </div>
-<hr>
 
 {% include "footer.html" %} 

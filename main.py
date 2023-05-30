@@ -128,7 +128,6 @@ def load_user(user_id):
 @app.route("/", methods=["GET", "POST"])
 def home():
     todays_date = str(date.today())
-    print(todays_date)
     devotional = DevotionalPost.query.all()
     news = NewsPost.query.all()
     word = WordPost.query.get(1)
