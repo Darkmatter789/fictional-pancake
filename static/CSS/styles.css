@@ -10,12 +10,31 @@ h1 {
     padding-bottom: 1%;
 }
 
+hr {
+    border-style: dotted;
+    width: 100px;
+    border-left: 0;
+    border-bottom: 0;
+    border-right: 0;
+    border-width: 10px;
+    border-color: #515353;
+    margin: 50px auto 50px;
+}
+
 footer {
     position: relative;
     left: 0;
     bottom: 0px;
     width: 100%;
     margin-top: 151px;
+}
+
+
+.navbar-toggler:active,
+.navbar-toggler:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: transparent !important;
 }
 
 
@@ -29,13 +48,15 @@ footer {
 }
 
 
-.header-nav {
+/* .header-nav {
     background-color: #A9907E;
-}
+} 
+ */
 
 header {
     padding-top: 1px;
 }
+
 
 .title {
     font-family: 'BioRhyme', serif;
@@ -44,29 +65,39 @@ header {
     color: antiquewhite;
 }
 
+
+.all_devotionals {
+    margin-bottom: 17%;
+}
+
 .login {
     padding-left: 85%;
     font-size: small;
 }
+
 
 .login-link {
     margin: 7px;
     color: antiquewhite;
 }
 
+
 .login-message {
     text-align: center;
     color: red;
 }
+
 
 .navbar {
     padding: 0;
     
 }
 
+
 .navbar-nav {
     text-align: left;
-    background-color: #A9907E;
+    /* background-color: #A9907E; */
+    color: antiquewhite;
 }
 
 
@@ -74,79 +105,106 @@ header {
     background-color: aliceblue;
 }
 
+
 .section {
     padding: 5% 20%;
 }
+
 
 .anouncements{
     padding: 0% 20%;
     text-align: left;
 }
 
+
 #devotional-img {
     padding-bottom: 5%;
 }
+
 
 #terry-img {
     border-radius: 50%;
     padding-bottom: 3%;
 }
 
+
 .content {
     text-align: left;
 }
+
 
 .contact-title {
     padding-top: 50px;
 }
 
+
 .page-footer {
     padding-top: 190px;
 }
+
 
 #name {
     color: black;
 }
 
+
+.post-title:hover {
+    color: antiquewhite;
+}
+
+
 .new-post-title {
     padding-top: 50px;
 }
 
+
 .blog-post {
     text-align: left;
 }
+
 
 .edit-btn {
     text-align: left;
     padding-bottom: 5%;
 }
 
+
 .blog-comment {
     text-align: left;
     font-weight: bold;
 }
 
+
 .post-heading {
     padding-top: 5%;
 }
+
 
 .post-preview {
     padding-top: 5%;
 }
 
+
 .commentText {
     text-align: left;
 }
 
+
 .edit {
     text-align: right;
 }
+
 
 .footer {
     background-color: antiquewhite;
     padding-bottom: 20px;
 }
 
+
 .list-inline {
     margin-top: 20px;
+}
+
+#navigation-btn {
+    color: antiquewhite;
 }

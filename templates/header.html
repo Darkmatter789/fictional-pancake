@@ -41,25 +41,25 @@
                     <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
                         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                             <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="/">Home</a>
+                            <a class="nav-link active" id="navigation-btn" aria-current="page" href="/">Home</a>
                             </li>
                             <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="{{url_for('all_blog_posts')}}">Blog</a>
+                            <a class="nav-link active" id="navigation-btn" aria-current="page" href="{{url_for('all_blog_posts')}}">Blog</a>
                             </li>
                             {% if current_user.is_authenticated: %}
                             <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="{{url_for('all_messages')}}">Message Board</a>
+                            <a class="nav-link active" id="navigation-btn" aria-current="page" href="{{url_for('all_messages')}}">Message Board</a>
                             </li>
                             {% endif %}
                             <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="{{url_for('about_us')}}">About Us</a>
+                            <a class="nav-link active" id="navigation-btn" aria-current="page" href="{{url_for('about_us')}}">About Us</a>
                             </li>
                             <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="{{url_for('contact')}}">Contact Us</a>
+                            <a class="nav-link active" id="navigation-btn" aria-current="page" href="{{url_for('contact')}}">Contact Us</a>
                             </li>
                             {% if current_user.name == "Admin" %}
                             <li class="nav-item">
-                                <a class="nav-link active" aria-current="page" href="{{url_for('dashboard')}}">Dashboard</a>
+                                <a class="nav-link active" id="navigation-btn" aria-current="page" href="{{url_for('dashboard')}}">Dashboard</a>
                             </li>
                             {% endif %}
                         </ul>
