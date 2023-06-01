@@ -9,6 +9,7 @@ from flask_login import UserMixin, login_user, LoginManager, login_required, cur
 from functools import wraps
 from forms import EmailForm, RegisterForm, LoginForm, CreateBlogPost, CommentForm, CreatePostForm, DevotionalForm, NewsForm, WordForm
 from contact import Contact
+import os
 
 
 app = Flask(__name__)
@@ -17,7 +18,9 @@ ckeditor = CKEditor(app)
 Bootstrap(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///RCA-Users.db'
+volume_path = "/var/lib/docker/volumes/RCA-DB/_data"
+db_uri = "sqlite:///" + os.path.join(volume_path, "RCA-Users.db")
+app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
