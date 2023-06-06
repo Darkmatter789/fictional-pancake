@@ -10,8 +10,6 @@ dist/
 images/
 uploads/
 venv/
-__pycache__/
-__pycache__
 *.exe
 *.0
 RCA-Users.db

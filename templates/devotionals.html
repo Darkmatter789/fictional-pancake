@@ -1,10 +1,12 @@
 {% include "header.html" %}
 
-<div class="all_devotionals">
-    <h5>Title - Launch Date</h5> 
-    {% for entry in posts %}
-    <li><a class="list-item" href="{{url_for('edit_devotional', devo_id=entry.id) }}">{{ entry.title }} - {{ entry.date }}</a><a style="color: red;" href="{{url_for('delete_devotional', devo_id=entry.id) }}">✘</a></li>
-    {% endfor %}
+<div class="container">
+    <div class="all_devotionals">
+        <h5>Title - Launch Date</h5> 
+        {% for entry in posts %}
+        <li><a class="list-item" href="{{url_for('edit_devotional', devo_id=entry.id) }}">{{ entry.title }} - {{ entry.date }}</a><a style="color: red;" href="{{url_for('delete_devotional', devo_id=entry.id) }}">✘</a></li>
+        {% endfor %}
+    </div>
 </div>
 
 {% include "footer.html" %}

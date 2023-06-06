@@ -43,13 +43,21 @@ footer {
   border-color: transparent !important;
 }
 
+
+.container {
+    background-color: #FFF7D4;
+    /* background-color: #FFEEB3; */
+    padding: 20px 0px;
+}
+
+
 .list-item {
     color: black;
 }
 
 
 .list-item:hover {
-    color: antiquewhite;
+    color: rgb(61, 61, 60);
 }
 
 
@@ -158,7 +166,7 @@ header {
 
 
 .post-title:hover {
-    color: antiquewhite;
+    color: rgb(131, 131, 129);
 }
 
 
@@ -205,7 +213,8 @@ header {
 
 
 .footer {
-    background-color: antiquewhite;
+    background-color: #FFF7D4;
+    /* background-color: #FFEEB3; */
     padding-bottom: 20px;
 }
 
