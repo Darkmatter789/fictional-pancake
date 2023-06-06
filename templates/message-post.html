@@ -6,6 +6,9 @@
     <div class="col-lg-8 col-md-10 mx-auto">
       <div class="post-heading">
         <h1>{{post.title}}</h1>
+        {% if post.img_upload %}
+        <img class="img-fluid" src="../static/uploads/{{ post.img_upload }}" alt="message img">
+        {% endif %}
         <span class="meta">Posted by
           <a href="#" style="color: black; text-decoration: none;">{{post.author.name}}</a>
           on {{post.date}}</span>

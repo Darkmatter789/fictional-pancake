@@ -1,8 +1,9 @@
-from flask import Flask, render_template, redirect, url_for, flash, abort
+from flask import Flask, render_template, redirect, request, url_for, flash, abort
 from flask_bootstrap import Bootstrap
 from flask_ckeditor import CKEditor
 from datetime import date
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
@@ -10,7 +11,7 @@ from functools import wraps
 from forms import EmailForm, RegisterForm, LoginForm, CreateBlogPost, CommentForm, CreatePostForm, DevotionalForm, NewsForm, WordForm
 from contact import Contact
 from dotenv import load_dotenv
-import boto3
+from boto3 import Session
 import os
 
 
@@ -25,13 +26,24 @@ aws_secret_access_key = os.environ.get('AWS_ACCESS_SECRET')
 aws_region = os.environ.get('AWS_REGION')
 s3_bucket = 'rca-users'
 container_path = "instance/RCA-Users.db"
-session = boto3.Session()
+session = Session()
 
 
 def upload_file_to_s3(local_file_path, bucket_name, s3_file_path):
     s3_client = session.client('s3', aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key, region_name=aws_region)
     s3_client.upload_file(local_file_path, bucket_name, s3_file_path)
    
+
+def upload_img(img_obj):
+    filename = secure_filename(img_obj.filename)
+    img_obj.save(("./static/uploads/" + filename))
+
+
+def delete_img(img_filename):
+    file_path = os.path.join('./static/uploads', img_filename)
+    if os.path.exists(file_path):
+        os.remove(file_path)
+
 
 app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET')
 ckeditor = CKEditor(app)
@@ -65,6 +77,7 @@ class BlogPost(db.Model):
     date = db.Column(db.String(250), nullable=False)
     body = db.Column(db.Text, nullable=False)
     img_url = db.Column(db.String(250), nullable=False)
+    img_upload = db.Column(db.String(250), nullable=False)
     blog_comments = relationship("BlogComment", back_populates="blog_parent_post")
 
 
@@ -88,6 +101,7 @@ class Message(db.Model):
     date = db.Column(db.String(250), nullable=False)
     body = db.Column(db.Text, nullable=False)
     img_url = db.Column(db.String(250), nullable=False)
+    img_upload = db.Column(db.String(250), nullable=False)
     message_comments = relationship("MessageComment", back_populates="message_parent_post")
 
 
@@ -109,6 +123,7 @@ class DevotionalPost(db.Model):
     img_url = db.Column(db.String(250), nullable=False)
     text = db.Column(db.Text, nullable=False)
     date = db.Column(db.String(250), nullable=False)
+    img_upload = db.Column(db.String(250), nullable=False)
 
 
 class NewsPost(db.Model):
@@ -146,6 +161,16 @@ def load_user(user_id):
     return db.get_or_404(User, user_id)
 
 
+# Checks uploaded img files and compares them to database filenames for association. Deletes img file if no association to post.
+def img_association_check():
+    blog_img_files = [entry.img_upload for entry in BlogPost.query.all()]
+    message_img_files = [entry.img_upload for entry in Message.query.all()]
+    devo_img_files = [entry.img_upload for entry in DevotionalPost.query.all()]
+    for file in os.listdir('./static/uploads/'):
+        if file not in blog_img_files and file not in message_img_files and file not in devo_img_files:
+            delete_img(file)
+
+
 # Homepage
 @app.route("/", methods=["GET", "POST"])
 def home():
@@ -170,11 +195,14 @@ def dashboard():
             title=devotional_form.title.data,
             img_url=devotional_form.img_url.data,
             text=devotional_form.text.data,
-            date=devotional_form.launch_date.data
+            date=devotional_form.launch_date.data,
+            img_upload=devotional_form.img_upload.data.filename
         )
+        if devotional_form.img_upload.data:
+            upload_img(devotional_form.img_upload.data)
         db.session.add(devotional_post)
         db.session.commit()
-        upload_file_to_s3(container_path, 'rca-users', 'RCA-Users.db')
+        # upload_file_to_s3(container_path, 'rca-users', 'RCA-Users.db')
         return redirect(url_for("dashboard"))
     if news_form.validate_on_submit():
         news_post = NewsPost(
@@ -183,7 +211,7 @@ def dashboard():
         )
         db.session.add(news_post)
         db.session.commit()
-        upload_file_to_s3(container_path, 'rca-users', 'RCA-Users.db')
+        # upload_file_to_s3(container_path, 'rca-users', 'RCA-Users.db')
         return redirect(url_for("dashboard"))
     if word_form.validate_on_submit():
         word_post = WordPost(
@@ -192,7 +220,7 @@ def dashboard():
         )
         db.session.add(word_post)
         db.session.commit()
-        upload_file_to_s3(container_path, 'rca-users', 'RCA-Users.db')
+        # upload_file_to_s3(container_path, 'rca-users', 'RCA-Users.db')
         return redirect(url_for("dashboard"))
     return render_template("dashboard.html", dev_form=devotional_form, news_form=news_form, word_form=word_form, all_devs=devotionals)
 
@@ -205,7 +233,7 @@ def all_devotionals():
     return render_template("devotionals.html", posts=all_posts)
 
 
-@app.route("/edit-devotional/<int:devo_id>")
+@app.route("/edit-devotional/<int:devo_id>", methods=["GET", "POST"])
 @login_required
 @admin_only
 def edit_devotional(devo_id):
@@ -217,14 +245,18 @@ def edit_devotional(devo_id):
         title=devo_to_edit.title,
         img_url=devo_to_edit.img_url,
         text=devo_to_edit.text,
+        img_upload=devo_to_edit.img_upload
     )
     if edit_form.validate_on_submit():
-        devo_to_edit.title=edit_form.title.data,
-        devo_to_edit.img_url=edit_form.img_url.data,
-        devo_to_edit.text=edit_form.text.data,
+        devo_to_edit.title=edit_form.title.data
+        devo_to_edit.img_url=edit_form.img_url.data
+        devo_to_edit.text=edit_form.text.data
         devo_to_edit.date=edit_form.launch_date.data
+        devo_to_edit.img_upload=edit_form.img_upload.data.filename
+        upload_img(edit_form.img_upload.data)
         db.session.commit()
-        upload_file_to_s3(container_path, 'rca-users', 'RCA-Users.db')
+        img_association_check()
+        # upload_file_to_s3(container_path, 'rca-users', 'RCA-Users.db')
         return redirect(url_for("all_devotionals"))
     return render_template("dashboard.html", dev_form=edit_form, news_form=news_form, word_form=word_form, all_devs=devotionals)
 
@@ -234,9 +266,11 @@ def edit_devotional(devo_id):
 @admin_only
 def delete_devotional(devo_id):
     devo_to_delete = DevotionalPost.query.get(devo_id)
+    if devo_to_delete.img_upload:
+        delete_img(devo_to_delete.img_upload)
     db.session.delete(devo_to_delete)
     db.session.commit()
-    upload_file_to_s3(container_path, 'rca-users', 'RCA-Users.db')
+    # upload_file_to_s3(container_path, 'rca-users', 'RCA-Users.db')
     return redirect(url_for("all_devotionals"))
 
 
@@ -254,7 +288,7 @@ def edit_news_post(news_id):
     if edit_form.validate_on_submit():
         news_to_edit.news_text=edit_form.body.data
         db.session.commit()
-        upload_file_to_s3(container_path, 'rca-users', 'RCA-Users.db')
+        # upload_file_to_s3(container_path, 'rca-users', 'RCA-Users.db')
         return redirect(url_for("home"))
     return render_template("dashboard.html", dev_form=devotional_form, news_form=edit_form, word_form=word_form, all_devs=devotionals)
 
@@ -266,7 +300,7 @@ def delete_news_post(news_id):
     post_to_delete = NewsPost.query.get(news_id)
     db.session.delete(post_to_delete)
     db.session.commit()
-    upload_file_to_s3(container_path, 'rca-users', 'RCA-Users.db')
+    # upload_file_to_s3(container_path, 'rca-users', 'RCA-Users.db')
     return redirect(url_for('home'))
 
 
@@ -284,7 +318,7 @@ def edit_word_post(word_id):
     if edit_form.validate_on_submit():
         word_to_edit.body=edit_form.word_body.data
         db.session.commit()
-        upload_file_to_s3(container_path, 'rca-users', 'RCA-Users.db')
+        # upload_file_to_s3(container_path, 'rca-users', 'RCA-Users.db')
         return redirect(url_for("home"))
     return render_template("dashboard.html", dev_form=devotional_form, news_form=news_form, word_form=edit_form, all_devs=devotionals)
 
@@ -296,8 +330,43 @@ def delete_word_post(word_id):
     post_to_delete = WordPost.query.get(word_id)
     db.session.delete(post_to_delete)
     db.session.commit()
-    upload_file_to_s3(container_path, 'rca-users', 'RCA-Users.db')
+    # upload_file_to_s3(container_path, 'rca-users', 'RCA-Users.db')
     return redirect(url_for('home'))
+
+
+@app.route("/users")
+@login_required
+@admin_only
+def users():
+    users = User.query.all()
+    return render_template("users.html", users=users)
+
+
+@app.route("/delete-user/<int:user_id>")
+@login_required
+@admin_only
+def delete_user(user_id):
+    user_to_delete = User.query.get(user_id)
+    db.session.delete(user_to_delete)
+    db.session.commit()
+    return redirect(url_for("users"))
+
+
+@app.route("/view-images")
+@login_required
+@admin_only
+def view_images():
+    images = os.listdir('./static/uploads/')
+    return render_template("images.html", images=images)
+
+
+@app.route("/delete-image/<filename>")
+@login_required
+@admin_only
+def delete_image(filename):
+    delete_img(filename)
+    return redirect(url_for("view_images"))
+
 
 # Authentication functions
 @app.route("/login", methods=["GET", "POST"])
@@ -340,7 +409,7 @@ def register():
             )
             db.session.add(new_user)
             db.session.commit()
-            upload_file_to_s3(container_path, 'rca-users', 'RCA-Users.db')
+            # upload_file_to_s3(container_path, 'rca-users', 'RCA-Users.db')
             login_user(new_user)
             return redirect(url_for("home"))
     return render_template("register.html", form=reg_form)
@@ -394,7 +463,7 @@ def get_message_post(post_id):
             )
         db.session.add(new_comment)
         db.session.commit()
-        upload_file_to_s3(container_path, 'rca-users', 'RCA-Users.db')
+        # upload_file_to_s3(container_path, 'rca-users', 'RCA-Users.db')
         return redirect(url_for("get_message_post", post_id=post_id))    
     return render_template("message-post.html", post=requested_post, form=comment_form, comments=message_comments)
 
@@ -409,11 +478,14 @@ def create_message_post():
             body=form.body.data,
             img_url=form.img_url.data,
             author=current_user,
+            img_upload=form.img_upload.data.filename,
             date=date.today().strftime("%B %d, %Y")
         )
+        if form.img_upload.data:
+            upload_img(form.img_upload.data)
         db.session.add(new_post)
         db.session.commit()
-        upload_file_to_s3(container_path, 'rca-users', 'RCA-Users.db')
+        # upload_file_to_s3(container_path, 'rca-users', 'RCA-Users.db')
         return redirect(url_for("all_messages"))
     return render_template("make-message-post.html", form=form)
 
@@ -426,15 +498,19 @@ def edit_message_post(post_id):
         title=post.title,
         img_url=post.img_url,
         author=post.author,
-        body=post.body
+        body=post.body,
+        img_upload=post.img_upload
     )
     if edit_form.validate_on_submit():
-        post.title = edit_form.title.data
-        post.img_url = edit_form.img_url.data
-        post.author = edit_form.author.data
-        post.body = edit_form.text.data
+        post.title=edit_form.title.data
+        post.img_url=edit_form.img_url.data
+        post.author=edit_form.author.data
+        post.body=edit_form.text.data
+        post.img_upload=edit_form.data.filename
+        upload_img(edit_form.img_upload.data)
         db.session.commit()
-        upload_file_to_s3(container_path, 'rca-users', 'RCA-Users.db')
+        img_association_check()
+        # upload_file_to_s3(container_path, 'rca-users', 'RCA-Users.db')
         return redirect(url_for("get_message_post", post_id=post.id))
     return render_template("make-message-post.html", form=edit_form)
 
@@ -443,9 +519,11 @@ def edit_message_post(post_id):
 @login_required
 def delete_message_post(post_id):
     post_to_delete = Message.query.get(post_id)
+    if post_to_delete.img_upload:
+        delete_img(post_to_delete.img_upload)
     db.session.delete(post_to_delete)
     db.session.commit()
-    upload_file_to_s3(container_path, 'rca-users', 'RCA-Users.db')
+    # upload_file_to_s3(container_path, 'rca-users', 'RCA-Users.db')
     return redirect(url_for('all_messages'))
 
 
@@ -455,7 +533,7 @@ def delete_message_comment(comment_id):
     comment_to_delete = MessageComment.query.get(comment_id)
     db.session.delete(comment_to_delete)
     db.session.commit()
-    upload_file_to_s3(container_path, 'rca-users', 'RCA-Users.db')
+    # upload_file_to_s3(container_path, 'rca-users', 'RCA-Users.db')
     return redirect(url_for('get_message_post', post_id=comment_to_delete.message_post_id))
 
 
@@ -483,7 +561,7 @@ def get_blog_post(post_id):
             )
         db.session.add(new_comment)
         db.session.commit()
-        upload_file_to_s3(container_path, 'rca-users', 'RCA-Users.db')
+        # upload_file_to_s3(container_path, 'rca-users', 'RCA-Users.db')
         return redirect(url_for("get_blog_post", post_id=post_id))    
     return render_template("blog-post.html", post=requested_post, form=comment_form, comments=blog_comments)
 
@@ -498,17 +576,20 @@ def create_blog_post():
             title=form.blog_title.data,
             body=form.blog_text.data,
             img_url=form.img_url.data,
+            img_upload=form.img_upload.data.filename,
             author=current_user,
             date=date.today().strftime("%B %d, %Y")
         )
+        if form.img_upload.data:
+            upload_img(form.img_upload.data)
         db.session.add(new_post)
         db.session.commit()
-        upload_file_to_s3(container_path, 'rca-users', 'RCA-Users.db')
+        # upload_file_to_s3(container_path, 'rca-users', 'RCA-Users.db')
         return redirect(url_for("all_blog_posts"))
     return render_template("make-blog-post.html", form=form)
 
 
-@app.route("/edit-blog-post/<int:post_id>")
+@app.route("/edit-blog-post/<int:post_id>", methods=["GET", "POST"])
 @login_required
 @admin_only
 def edit_blog_post(post_id):
@@ -516,16 +597,18 @@ def edit_blog_post(post_id):
     edit_form = CreateBlogPost(
         blog_title=post.title,
         img_url=post.img_url,
-        author=post.author,
+        img_upload=post.img_upload,
         blog_text=post.body
     )
     if edit_form.validate_on_submit():
-        post.title = edit_form.blog_title.data
-        post.img_url = edit_form.img_url.data
-        post.author = edit_form.author.data
-        post.body = edit_form.blog_text.data
+        post.title=edit_form.blog_title.data
+        post.img_url=edit_form.img_url.data
+        post.body=edit_form.blog_text.data
+        post.img_upload=edit_form.img_upload.data.filename
+        upload_img(edit_form.img_upload.data)
         db.session.commit()
-        upload_file_to_s3(container_path, 'rca-users', 'RCA-Users.db')
+        img_association_check()
+        # upload_file_to_s3(container_path, 'rca-users', 'RCA-Users.db')
         return redirect(url_for("get_blog_post", post_id=post.id))
     return render_template("make-blog-post.html", form=edit_form)
 
@@ -535,9 +618,11 @@ def edit_blog_post(post_id):
 @admin_only
 def delete_blog_post(post_id):
     post_to_delete = BlogPost.query.get(post_id)
+    if post_to_delete.img_upload:
+        delete_img(post_to_delete.img_upload)
     db.session.delete(post_to_delete)
     db.session.commit()
-    upload_file_to_s3(container_path, 'rca-users', 'RCA-Users.db')
+    # upload_file_to_s3(container_path, 'rca-users', 'RCA-Users.db')
     return redirect(url_for('all_blog_posts'))
 
 
@@ -547,7 +632,7 @@ def delete_blog_comment(comment_id):
     comment_to_delete = BlogComment.query.get(comment_id)
     db.session.delete(comment_to_delete)
     db.session.commit()
-    upload_file_to_s3(container_path, 'rca-users', 'RCA-Users.db')
+    # upload_file_to_s3(container_path, 'rca-users', 'RCA-Users.db')
     return redirect(url_for('get_blog_post', post_id=comment_to_delete.blog_post_id))
     
 

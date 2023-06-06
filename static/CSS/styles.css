@@ -21,6 +21,12 @@ hr {
     margin: 50px auto 50px;
 }
 
+
+a {
+    text-decoration: none;
+}
+
+
 footer {
     position: relative;
     left: 0;
@@ -37,6 +43,15 @@ footer {
   border-color: transparent !important;
 }
 
+.list-item {
+    color: black;
+}
+
+
+.list-item:hover {
+    color: antiquewhite;
+}
+
 
 .first-letter {
     font-style: italic;
@@ -47,11 +62,6 @@ footer {
     font-size: small;
 }
 
-
-/* .header-nav {
-    background-color: #A9907E;
-} 
- */
 
 header {
     padding-top: 1px;
@@ -96,7 +106,6 @@ header {
 
 .navbar-nav {
     text-align: left;
-    /* background-color: #A9907E; */
     color: antiquewhite;
 }
 

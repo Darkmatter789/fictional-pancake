@@ -1,0 +1,18 @@
+{% include "header.html" %}
+
+<div class="container col-lg-8 col-md-10 mx-auto">
+    <div class="section">
+        <div class="all_users">
+            <h1>Uploaded images</h1>
+            <hr> 
+            {% for image in images %}
+            <img class="img-fluid" src="../static/uploads/{{image}}" alt="{{image}}">{{image}}<a style="color: red;" href="{{url_for('delete_image', filename=image) }}">✘</a></li>
+            <hr>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+
+
+{% include "footer.html" %}

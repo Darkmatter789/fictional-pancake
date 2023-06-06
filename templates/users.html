@@ -1,0 +1,11 @@
+{% include "header.html" %}
+
+<h1>Registered Users</h1>
+<div class="all_users">
+    <h5>Name - Email Address</h5> 
+    {% for user in users %}
+    <li><a class="list-item" href="">{{ user.name }} - {{ user.email }}<a style="color: red;" href="{{url_for('delete_user', user_id=user.id) }}">✘</a></li>
+    {% endfor %}
+</div>
+
+{% include "footer.html" %}

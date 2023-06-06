@@ -18,12 +18,12 @@
             <div class="login">
                 <span>
                     {% if not current_user.is_authenticated: %}
-                    <a class="login-link" style="text-decoration: none;" href="{{url_for('login')}}">Login</a>
-                    <a class="login-link" style="text-decoration: none;" href="{{url_for('register')}}">Register</a>
+                    <a class="login-link" href="{{url_for('login')}}">Login</a>
+                    <a class="login-link" href="{{url_for('register')}}">Register</a>
                     {% endif %}
                     {% if current_user.is_authenticated: %}
                     <p class="login-link">Hello, {{ current_user.name }}</p>
-                    <a class="login-link" style="text-decoration: none;" href="{{url_for('logout')}}">Logout</a>
+                    <a class="login-link" href="{{url_for('logout')}}">Logout</a>
                     {% endif %}
                 </span>
             </div>
