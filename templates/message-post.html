@@ -9,9 +9,11 @@
         {% if post.img_upload %}
         <img class="img-fluid" src="../static/uploads/{{ post.img_upload }}" alt="message img">
         {% endif %}
-        <span class="meta">Posted by
-          <a href="#" style="color: black; text-decoration: none;">{{post.author.name}}</a>
-          on {{post.date}}</span>
+        <div>
+          <span class="meta">Posted by
+            <a href="#" style="color: black; text-decoration: none;">{{post.author.name}}</a>
+            on {{post.date}}</span>
+        </div>  
       </div>
     </div>
   </div>
