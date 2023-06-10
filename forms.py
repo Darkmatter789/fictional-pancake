@@ -67,3 +67,14 @@ class EmailForm(RegisterForm):
     email = EmailField("Email", validators=[DataRequired(), is_email])
     message = CKEditorField("Message", validators=[DataRequired()], render_kw={"style": "height: 250px"})
     submit = SubmitField("Send")
+
+
+class UserSearchForm(FlaskForm):
+    email = EmailField("Email", validators=[DataRequired(), is_email])
+    submit = SubmitField("Send Email")
+
+
+class NewPasswordForm(FlaskForm):
+    pwd = PasswordField("New Password", validators=[DataRequired()])
+    pwd_verified = PasswordField("Confirm New Password", validators=[DataRequired()])
+    submit = SubmitField("Submit")

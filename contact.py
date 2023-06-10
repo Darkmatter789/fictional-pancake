@@ -23,3 +23,15 @@ class Contact:
                 to_addrs=TO_EMAIL,
                 msg=f"{self.name}\n{self.email}\n{self.body}\n{self.subject}"
             )
+
+
+    def send_reset_link(user_email, user_id):
+        link = f"http://riversidechristianacademy.org/reset/{user_id}"
+        with smtplib.SMTP("smtp.gmail.com") as connection:
+            connection.starttls()
+            connection.login(user=EMAIL, password=PWD)
+            connection.sendmail(
+                from_addr=EMAIL,
+                to_addrs=user_email,
+                msg=f"Reset password for {user_email}\n{link}"
+            )

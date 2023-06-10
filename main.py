@@ -9,7 +9,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
 from functools import wraps
-from forms import EmailForm, RegisterForm, LoginForm, CreateBlogPost, CommentForm, CreatePostForm, DevotionalForm, NewsForm, WordForm
+from forms import EmailForm, RegisterForm, LoginForm, CreateBlogPost, CommentForm, CreatePostForm, DevotionalForm, NewsForm, WordForm, UserSearchForm, NewPasswordForm
 from contact import Contact
 from dotenv import load_dotenv
 from boto3 import Session
@@ -425,7 +425,36 @@ def register():
     return render_template("register.html", form=reg_form)
 
 
+@app.route("/reset-request", methods=["GET", "POST"])
+def reset_request():
+    all_users = {user.email:user.id for user in User.query.all()}
+    request_form = UserSearchForm()
+    if request_form.validate_on_submit():
+        if request_form.email.data in all_users:
+            verified_user_id = all_users[f"{request_form.email.data}"]
+            verified_user = User.query.get(verified_user_id)
+            Contact.send_reset_link(verified_user.email, verified_user.id)
+            flash("A reset link has been sent to the email address. Please check your email.")
+            return redirect(url_for("reset_request"))
+        else:
+            flash("The email address entered is not a registered user. Please register and login.")
+    return render_template("reset-request.html", form=request_form)
 
+
+@app.route("/reset/<int:user_id>", methods=["GET", "POST"])
+def reset_password(user_id):
+    user = User.query.get(user_id)
+    form = NewPasswordForm()
+    if form.validate_on_submit():
+        if form.pwd.data == form.pwd_verified.data:
+            user.password = generate_password_hash(form.pwd.data, 'pbkdf2:sha256', 8)
+            db.session.commit()
+            flash("Password reset successful. Please login")
+            return redirect(url_for("login"))
+        else:
+            flash("The new passwords do not match. Please try again.")
+            return redirect(url_for("reset_password", user_id=user_id))
+    return render_template("reset.html", form=form)
 
 
 # About page
