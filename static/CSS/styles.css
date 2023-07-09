@@ -3,6 +3,9 @@ body {
     text-align: center;
     background-color: #7C9070;
     border-top: 0cap;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
 
@@ -28,11 +31,7 @@ a {
 
 
 footer {
-    position: relative;
-    left: 0;
-    bottom: 0px;
-    width: 100%;
-    margin-top: 151px;
+    padding-top: 100px;
 }
 
 
@@ -46,7 +45,6 @@ footer {
 
 .container {
     background-color: #FFF7D4;
-    /* background-color: #FFEEB3; */
     padding: 20px 0px;
 }
 
@@ -108,7 +106,6 @@ header {
 
 .navbar {
     padding: 0;
-    
 }
 
 
@@ -129,7 +126,7 @@ header {
 
 
 .forms {
-    margin-left: 43%;
+    margin-left: 44%;
     text-align: left;
 }
 
@@ -152,6 +149,7 @@ header {
 
 
 .content {
+    flex: 1;
     text-align: left;
 }
 
@@ -162,7 +160,7 @@ header {
 
 
 .page-footer {
-    padding-top: 190px;
+    margin-top: auto;
 }
 
 
@@ -220,7 +218,6 @@ header {
 
 .footer {
     background-color: #FFF7D4;
-    /* background-color: #FFEEB3; */
     padding-bottom: 20px;
 }
 

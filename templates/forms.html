@@ -4,7 +4,7 @@
     <div class="forms">
         {% for form in forms: %} 
         <li>
-            <a href="{{url_for('download_pdf', filename=form) }}">{{ form }}</a>
+            <a href="{{url_for('download_pdf', filename=form) }}">{{ form|replace('.pdf', '')|replace('_', ' ')|capitalize }}</a>
         </li>
         {% endfor %}
     </div>
