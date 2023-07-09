@@ -57,6 +57,9 @@
                             <li class="nav-item">
                             <a class="nav-link active" id="navigation-btn" aria-current="page" href="{{url_for('contact')}}">Contact Us</a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link active" id="navigation-btn" aria-current="page" href="{{url_for('forms')}}">Forms</a>
+                            </li>
                             {% if current_user.name == "Admin" %}
                             <li class="nav-item">
                                 <a class="nav-link active" id="navigation-btn" aria-current="page" href="{{url_for('dashboard')}}">Dashboard</a>

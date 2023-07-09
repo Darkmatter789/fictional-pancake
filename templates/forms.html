@@ -1,0 +1,14 @@
+{% include "header.html" %}
+<div class="container">
+    <h1>Forms</h1>
+    <div class="forms">
+        {% for form in forms: %} 
+        <li>
+            <a href="{{url_for('download_pdf', filename=form) }}">{{ form }}</a>
+        </li>
+        {% endfor %}
+    </div>
+</div>
+
+
+{% include "footer.html" %} 

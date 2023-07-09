@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, flash, abort
+from flask import Flask, render_template, redirect, url_for, flash, abort, send_file
 from flask_bootstrap import Bootstrap
 from flask_ckeditor import CKEditor
 from datetime import date
@@ -477,6 +477,19 @@ def contact():
         flash("Message Sent")
         return redirect(url_for("contact"))
     return render_template("contact.html", form=contact_form)
+
+
+@app.route("/forms")
+def forms():
+    forms = os.listdir('./static/forms/')
+    return render_template("forms.html", forms=forms)
+
+
+@app.route("/download_pdf/<filename>")
+def download_pdf(filename):
+    file_path = './static/forms/'
+    file = os.path.join(file_path, filename)
+    return send_file(file, as_attachment=True)
 
 
 # Message Fuctions
