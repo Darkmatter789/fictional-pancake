@@ -8,6 +8,8 @@ RUN apt-get update && apt-get install -y \
     libxcb-xinerama0 \
     libxcb-shape0 \
     libxcb-xfixes0 \
+    libssl-dev \ 
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 # Set the working directory to /app
@@ -24,5 +26,4 @@ COPY . .
 EXPOSE 5000
 
 # Start the Flask application
-CMD ["gunicorn", "main:app", "-b", "0.0.0.0:5000"]
-# CMD ["python", "main.py"]
+CMD ["gunicorn", "main:app", "-b", "0.0.0.0:5000", "--timeout", "180"]

@@ -1,37 +1,60 @@
-import smtplib
 import os
+import requests
+import logging
 
-EMAIL = os.environ.get('EMAIL')
-PWD = os.environ.get('PWD')
-TO_EMAIL = os.environ.get('FROM_EMAIL')
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
+
+TO_EMAIL = "rca.juliemathey@gmail.com"
+URL = "https://api.elasticemail.com/v2/email/send"
+API_KEY = os.environ.get("API_KEY")
 
 class Contact:
 
-    def __init__(self, name, email, body, subject=None):
+    def __init__(self, name, email, body):
         self.name = name
         self.email = email
-        self.subject = subject
         self.body = body
 
 
     def send_message(self):
-        with smtplib.SMTP("smtp.gmail.com") as connection:
-            connection.starttls()
-            connection.login(user=EMAIL, password=PWD)
-            connection.sendmail(
-                from_addr=EMAIL,
-                to_addrs=TO_EMAIL,
-                msg=f"{self.name}\n{self.email}\n{self.body}\n{self.subject}"
-            )
+        try:
+            self._send_email()
+            logging.info('Email sent successfully!')
+        except Exception as e:
+            logging.info('Failed to send email:', e)
+        
+
+
+    def _send_email(self):
+        data = {
+            "apikey": API_KEY,
+            "subject": "Subject: Contact Form Submission",
+            "from": self.email,
+            "fromName": self.name,
+            "to": TO_EMAIL,
+            "bodyText": self.body
+        }
+        response = requests.post(URL, data=data)
+        if response.status_code == 200:
+            return True
+        else:
+            return False
+      
 
 
     def send_reset_link(user_email, user_id):
         link = f"http://riversidechristianacademy.org/reset/{user_id}"
-        with smtplib.SMTP("smtp.gmail.com") as connection:
-            connection.starttls()
-            connection.login(user=EMAIL, password=PWD)
-            connection.sendmail(
-                from_addr=EMAIL,
-                to_addrs=user_email,
-                msg=f"Reset password for {user_email}\n{link}"
-            )
+        data = {
+            "apikey": API_KEY,
+            "subject": "Contact Form Submission",
+            "from": "RiverSide_Admin_Password_Reset",
+            "to": user_email,
+            "bodyText": f"Reset your password {link}"
+        }
+        response = requests.post(URL, data=data)
+        if response.status_code == 200:
+            return True
+        else:
+            return False
+        

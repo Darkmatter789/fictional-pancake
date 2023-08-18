@@ -163,3 +163,4 @@ forms/
 images/
 uploads/
 docker-compose.yml
+entrypoint.sh

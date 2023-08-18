@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, flash, abort, send_file
+from flask import Flask, render_template, redirect, url_for, flash, abort, send_file, request
 from flask_bootstrap import Bootstrap
 from flask_ckeditor import CKEditor
 from datetime import date
@@ -49,12 +49,25 @@ def upload_file_to_s3():
     s3_client.upload_file(local_file_path, s3_bucket, s3_file_path)
    
 
+def backup_images(filename):
+    filename = secure_filename(filename.filename)
+    session = Session()
+    aws_access_key_id = os.environ.get('AWS_ACCESS_ID')
+    aws_secret_access_key = os.environ.get('AWS_ACCESS_SECRET')
+    aws_region = os.environ.get('AWS_REGION')
+    s3_bucket = 'rca-users'
+    s3_file_path = f"images/{filename}"
+    local_file_path = f"static/uploads/{filename}"
+    s3_client = session.client('s3', aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key, region_name=aws_region)
+    s3_client.upload_file(local_file_path, s3_bucket, s3_file_path)
+
+
 def upload_img(img_obj):
     filename = secure_filename(img_obj.filename)
     path = "./static/uploads/" + filename
     img_obj.save((path))
     image = imageio.imread(path).astype(np.uint8)
-    resized_image = sk.resize(image, (400, 600))
+    resized_image = sk.resize(image, (300, 300))
     pillow_image = Image.fromarray((resized_image * 255).astype(np.uint8))
     pillow_image.save(path)
     
@@ -187,7 +200,7 @@ def home():
     todays_date = str(date.today())
     devotional = DevotionalPost.query.all()
     news = NewsPost.query.all()
-    word = WordPost.query.get(1)
+    word = WordPost.query.all()
     return render_template("index.html", devotional_posts=devotional, news=news, word=word, todays_date=todays_date)
 
 
@@ -284,7 +297,7 @@ def delete_devotional(devo_id):
     return redirect(url_for("all_devotionals"))
 
 
-@app.route("/edit-news-post/<int:news_id>")
+@app.route("/edit-news-post/<int:news_id>", methods=["GET", "POST"])
 @login_required
 @admin_only
 def edit_news_post(news_id):
@@ -314,7 +327,7 @@ def delete_news_post(news_id):
     return redirect(url_for('home'))
 
 
-@app.route("/edit-word-post/<int:word_id>")
+@app.route("/edit-word-post/<int:word_id>", methods=["GET", "POST"])
 @login_required
 @admin_only
 def edit_word_post(word_id):
@@ -464,14 +477,14 @@ def about_us():
 
 
 # Contact page
-@app.route("/contact")
+@app.route("/contact", methods=["GET", "POST"])
 def contact():
     contact_form = EmailForm()
     if contact_form.validate_on_submit():
         new_message = Contact(
             contact_form.name.data, 
             contact_form.email.data,  
-            contact_form.body.data
+            contact_form.message.data
             )
         Contact.send_message(new_message)
         flash("Message Sent")
@@ -545,7 +558,7 @@ def create_message_post():
     return render_template("make-message-post.html", form=form)
 
 
-@app.route("/edit-message-post/<int:post_id>")
+@app.route("/edit-message-post/<int:post_id>", methods=["GET", "POST"])
 @login_required
 def edit_message_post(post_id):
     post = Message.query.get(post_id)
@@ -627,21 +640,32 @@ def get_blog_post(post_id):
 def create_blog_post():
     form = CreateBlogPost()
     if form.validate_on_submit():
-        new_post = BlogPost(
-            title=form.blog_title.data,
-            body=form.blog_text.data,
-            img_url=form.img_url.data,
-            img_upload=form.img_upload.data.filename,
-            author=current_user,
-            date=date.today().strftime("%B %d, %Y")
-        )
+        if 'preview' in request.form:
+            if form.img_upload.data:
+                upload_img(form.img_upload.data)
+            return blog_post_preview(form)
+        if 'submit' in request.form:
+            new_post = BlogPost(
+                title=form.blog_title.data,
+                body=form.blog_text.data,
+                img_url=form.img_url.data,
+                img_upload=form.img_upload.data.filename,
+                author=current_user,
+                date=date.today().strftime("%B %d, %Y")
+            )
         if form.img_upload.data:
             upload_img(form.img_upload.data)
         db.session.add(new_post)
         db.session.commit()
         upload_file_to_s3()
+        backup_images(form.img_upload.data)
         return redirect(url_for("all_blog_posts"))
     return render_template("make-blog-post.html", form=form)
+
+
+@app.route("/preview-blog-post", methods=["GET", "POST"])
+def blog_post_preview(post):
+    return render_template("blog-post-preview.html", post=post)
 
 
 @app.route("/edit-blog-post/<int:post_id>", methods=["GET", "POST"])

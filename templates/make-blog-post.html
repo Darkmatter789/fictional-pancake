@@ -19,7 +19,7 @@
     <div class="col-lg-7 col-md-7 col-sm-6 col-xs-6 mx-auto content">
       {{ ckeditor.load() }}
       {{ ckeditor.config(name='body') }}
-      {{ wtf.quick_form(form, novalidate=True, button_map={"submit": "primary"}) }}
+      {{ wtf.quick_form(form, novalidate=True, button_map={"preview": "primary", "submit": "primary"}) }}
     </div>
   </div>
 </div>

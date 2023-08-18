@@ -1,0 +1,40 @@
+{% include "header.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+<div class="container">
+  <div class="row">
+    <div class="col-lg-8 col-md-10 mx-auto">
+      <div class="post-heading">
+        <h1>{{post.blog_title.data}}</h1>
+        {% if post.img_upload.data.filename %}
+        <img class="img-fluid" src="../static/uploads/{{ post.img_upload.data.filename }}" alt="blog img">
+        {% endif %}
+        <div>
+          <span class="meta">Posted by
+            <a href="#" style="color: black; text-decoration: none;">{{current_user.name}}</a>
+            
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-lg-8 col-md-10 mx-auto blog-post">
+        {{ post.blog_text.data|safe }}
+        </div>
+    </div>
+</div>
+<div class="backButton">
+    <button id="backButton">Go Back</button>
+    <script>
+        document.getElementById("backButton").addEventListener("click", function() {
+            window.history.back();
+        });
+    </script>
+</div>
+
+
+{% include "footer.html" %}

@@ -1,6 +1,6 @@
 {% include "header.html" %}
 
-<div class="container col-lg-8 col-md-10 mx-auto">
+<!-- <div class="container col-lg-8 col-md-10 mx-auto">
     <div class="section">
         <h1>Daily Devotional</h1>
         {% for post in devotional_posts: %}
@@ -14,7 +14,7 @@
         {% endfor %}
     </div>
     <hr>
-</div>
+</div> -->
 
 
 <div class="container col-lg-8 col-md-10 mx-auto">
@@ -37,14 +37,16 @@
 
 <div class="container col-lg-8 col-md-10 mx-auto">
     <div class="section">
-        <h1>A word from Terri</h1>
-        <img id="terry-img" src="../static/images/terry.jpg" class="img-fluid" alt="terry-img">
-        <p>{{ word.body| safe }}</p>
-        {% if current_user.is_authenticated: %}
-            {% if current_user.id == 1 %}
-                <a href="{{ url_for('edit_word_post', word_id=word.id) }}">✎</a><a style="color: red;" href="{{ url_for('delete_word_post', word_id=word.id) }}">✘</a>
+        <h1>A Word From Terri</h1>
+        <img id="terry-img" src="../static/images/terri.jpg" class="img-fluid" alt="terri-img">
+        {% for words in word %}
+            <p>{{ words.body| safe }}</p>
+            {% if current_user.is_authenticated: %}
+                {% if current_user.id == 1 %}
+                    <a href="{{ url_for('edit_word_post', word_id=words.id) }}">✎</a><a style="color: red;" href="{{ url_for('delete_word_post', word_id=words.id) }}">✘</a>
+                {% endif %}
             {% endif %}
-        {% endif %}
+        {% endfor %}
     </div>
 </div>
 

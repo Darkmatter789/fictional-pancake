@@ -22,8 +22,9 @@ class CreateBlogPost(FlaskForm):
     img_url = StringField("Image URL", validators=[Optional(), URL()])
     img_upload = FileField("Upload an Image", validators=[Optional()])
     blog_text = CKEditorField("Content", validators=[DataRequired()], render_kw={"style": "height: 250px"})
+    preview = SubmitField("Preview Post")
     submit = SubmitField("Submit Post")
-
+    
 
 class RegisterForm(FlaskForm):        
     name = StringField("First and Last Name", validators=[DataRequired()])
@@ -62,7 +63,7 @@ class WordForm(FlaskForm):
     submit = SubmitField("Submit")
 
 
-class EmailForm(RegisterForm):
+class EmailForm(FlaskForm):
     name = StringField("Name", validators=[DataRequired()])
     email = EmailField("Email", validators=[DataRequired(), is_email])
     message = CKEditorField("Message", validators=[DataRequired()], render_kw={"style": "height: 250px"})
