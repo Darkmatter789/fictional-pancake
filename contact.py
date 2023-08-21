@@ -2,10 +2,9 @@ import os
 import requests
 import logging
 
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
-TO_EMAIL = "rca.juliemathey@gmail.com"
+TO_EMAIL = "terrig.rca@gmail.com"
 URL = "https://api.elasticemail.com/v2/email/send"
 API_KEY = os.environ.get("API_KEY")
 

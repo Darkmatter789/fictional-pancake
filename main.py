@@ -18,12 +18,16 @@ import imageio
 import skimage.transform as sk
 import numpy as np
 import os
+import logging
 
 
 app = Flask(__name__)
 
 
 load_dotenv()
+
+
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
