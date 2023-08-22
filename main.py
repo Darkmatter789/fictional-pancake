@@ -376,6 +376,7 @@ def delete_user(user_id):
     user_to_delete = User.query.get(user_id)
     db.session.delete(user_to_delete)
     db.session.commit()
+    upload_file_to_s3()
     return redirect(url_for("users"))
 
 
@@ -466,6 +467,7 @@ def reset_password(user_id):
         if form.pwd.data == form.pwd_verified.data:
             user.password = generate_password_hash(form.pwd.data, 'pbkdf2:sha256', 8)
             db.session.commit()
+            upload_file_to_s3()
             flash("Password reset successful. Please login")
             return redirect(url_for("login"))
         else:
